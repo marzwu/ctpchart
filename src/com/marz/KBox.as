@@ -15,7 +15,8 @@ package com.marz {
 		private var incatorLayer:Sprite;//指标层
 		private var crossStarLayer:Sprite;//十字星层
 		private var infoLayer:TextField;//信息层
-		private var crossStarInfo:TextField;
+		private var floatPriceTxt:TextField;
+		private var floatDateTimeTxt:TextField;
 		
 		private var _symbol:String = '';//数据名
 		private var _data:Array = [];//所有数据
@@ -53,11 +54,17 @@ package com.marz {
 			crossStarLayer.mouseEnabled = false;
 			addChild(crossStarLayer);
 			
-			crossStarInfo = new TextField();
-			crossStarInfo.mouseEnabled = false;
-			crossStarInfo.mouseWheelEnabled = false;
-			crossStarInfo.autoSize = TextFieldAutoSize.LEFT;
-			crossStarLayer.addChild(crossStarInfo);
+			floatPriceTxt = new TextField();
+			floatPriceTxt.mouseEnabled = false;
+			floatPriceTxt.mouseWheelEnabled = false;
+			floatPriceTxt.autoSize = TextFieldAutoSize.LEFT;
+			crossStarLayer.addChild(floatPriceTxt);
+			
+			floatDateTimeTxt = new TextField();
+			floatDateTimeTxt.mouseEnabled = false;
+			floatDateTimeTxt.mouseWheelEnabled = false;
+			floatDateTimeTxt.autoSize = TextFieldAutoSize.LEFT;
+			crossStarLayer.addChild(floatDateTimeTxt);
 		}
 		
 		private function onAddToStage(e:Event):void {
@@ -108,8 +115,8 @@ package com.marz {
 				
 				//y值
 				var scale:Number = 1.0 * windowHeight / (_hValue - _lValue);
-				crossStarInfo.text = '' + (_hValue - (e.localY - margin) / scale).toFixed(2);
-				crossStarInfo.y = e.localY - crossStarInfo.height;
+				floatPriceTxt.text = '' + (_hValue - (e.localY - margin) / scale).toFixed(2);
+				floatPriceTxt.y = e.localY - floatPriceTxt.height;
 				
 				//ohlc
 				var index:int = (e.localX - margin) / (k_width + gap);
@@ -117,6 +124,11 @@ package com.marz {
 					var k:KData = _dataInBox[index];
 					var c:String = k.c > k.o ? '#ff0000' : '#0000ff';
 					infoLayer.htmlText = StringUtil.substitute('{0} <font color="{5}">o:{1}, h:{2}, l:{3}, c:{4}</font>', symbol, k.o, k.h, k.l, k.c, c);
+					
+					//时间
+					floatDateTimeTxt.text = '' + k.t_str;
+					floatDateTimeTxt.x = e.localX;
+					floatDateTimeTxt.y = margin + windowHeight - floatDateTimeTxt.height;
 				}
 			}
 		}
