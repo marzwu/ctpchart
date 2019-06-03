@@ -7,15 +7,18 @@ package com.marz {
 	import flash.text.TextFieldAutoSize;
 	import flash.ui.Keyboard;
 	
+	import mx.utils.StringUtil;
+	
 	public class KBox extends Sprite {
 		private var bgLayer:Sprite;//背景层
 		private var kLayer:Sprite;//柱体层
 		private var incatorLayer:Sprite;//指标层
 		private var crossStarLayer:Sprite;//十字星层
 		private var infoLayer:TextField;//信息层
+		private var crossStarInfo:TextField;
 		
 		private var _symbol:String = '';//数据名
-		private var _data:Array;//所有数据
+		private var _data:Array = [];//所有数据
 		private var _dataInBox:Array;
 		private var _hValue:Number;
 		private var _lValue:Number;
@@ -49,6 +52,12 @@ package com.marz {
 			crossStarLayer.mouseChildren = false;
 			crossStarLayer.mouseEnabled = false;
 			addChild(crossStarLayer);
+			
+			crossStarInfo = new TextField();
+			crossStarInfo.mouseEnabled = false;
+			crossStarInfo.mouseWheelEnabled = false;
+			crossStarInfo.autoSize = TextFieldAutoSize.LEFT;
+			crossStarLayer.addChild(crossStarInfo);
 		}
 		
 		private function onAddToStage(e:Event):void {
@@ -91,11 +100,24 @@ package com.marz {
 				crossStarLayer.graphics.lineStyle(1, 0xff00ff);
 				
 				//横线
-				crossStarLayer.graphics.moveTo(0, e.localY);
-				crossStarLayer.graphics.lineTo(windowWidth, e.localY);
+				crossStarLayer.graphics.moveTo(margin, e.localY);
+				crossStarLayer.graphics.lineTo(margin + windowWidth, e.localY);
 				//竖线
-				crossStarLayer.graphics.moveTo(e.localX, 0);
-				crossStarLayer.graphics.lineTo(e.localX, windowHeight);
+				crossStarLayer.graphics.moveTo(e.localX, margin);
+				crossStarLayer.graphics.lineTo(e.localX, margin + windowHeight);
+				
+				//y值
+				var scale:Number = 1.0 * windowHeight / (_hValue - _lValue);
+				crossStarInfo.text = '' + (_hValue - (e.localY - margin) / scale).toFixed(2);
+				crossStarInfo.y = e.localY - crossStarInfo.height;
+				
+				//ohlc
+				var index:int = (e.localX - margin) / (k_width + gap);
+				if (0 <= index && index < _dataInBox.length) {
+					var k:KData = _dataInBox[index];
+					var c:String = k.c > k.o ? '#ff0000' : '#0000ff';
+					infoLayer.htmlText = StringUtil.substitute('{0} <font color="{5}">o:{1}, h:{2}, l:{3}, c:{4}</font>', symbol, k.o, k.h, k.l, k.c, c);
+				}
 			}
 		}
 		
@@ -104,6 +126,8 @@ package com.marz {
 		}
 		
 		public function show():void {
+			infoLayer.text = symbol;
+			
 			this.graphics.clear();
 			this.graphics.lineStyle(1, 0xffffff);
 			this.graphics.beginFill(0xffffff, 1);
@@ -157,6 +181,14 @@ package com.marz {
 				kLayer.graphics.moveTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - k.l) * scale);
 				kLayer.graphics.lineTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - Math.min(k.o, k.c)) * scale);
 			}
+		}
+		
+		public function get symbol():String {
+			return _symbol;
+		}
+		
+		public function set symbol(value:String):void {
+			_symbol = value;
 		}
 	}
 }

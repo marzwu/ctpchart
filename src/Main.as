@@ -55,14 +55,14 @@ package {
 
 //			this.addEventListener(Event.COMPLETE, onActive);
 			
-			stage.addEventListener(Event.ENTER_FRAME, onActive);
+			stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 //			stage.nativeWindow.addEventListener(Event.ADDED_TO_STAGE, onActive);
 //			NativeApplication.nativeApplication.addEventListener(Event.ACTIVATE, onActive);
 //			trace(NativeApplication.nativeApplication.applicationDescriptor);
 			
 			
 			kbox = new KBox();
-			kbox.setData(createTestData());
+//			kbox.setData(createTestData());
 			addChild(kbox);
 
 //			addChild(new PushButton(this, 100, 200, 'nice day'));
@@ -115,13 +115,16 @@ package {
 					ks.push(k);
 				}
 			}
+			
+			var path:String = e.currentTarget.nativePath.split("\\").join("/");
+			var fileName:String = path.substr(path.lastIndexOf("/") + 1, path.length);
+			var lastIndexOf:int = fileName.lastIndexOf('.');
+			if (lastIndexOf > 0) {
+				fileName = fileName.substr(0, lastIndexOf)
+			}
+			kbox.symbol = fileName;
 			kbox.setData(ks);
 			kbox.show();
-
-//			trace(NativeApplication.nativeApplication.activeWindow.bounds);
-//			trace(NativeApplication.nativeApplication.activeWindow.listOwnedWindows().length);
-//			trace(stage.width,stage.height);
-			trace(stage.stageWidth, stage.stageHeight);
 		}
 		
 		public function openBacktest(path:String):void {
@@ -146,19 +149,16 @@ package {
 		}
 		
 		private function onResize(e:Event):void {
-			
-			
 			kbox.show();
 		}
 		
-		private function onActive(e:Event):void {
-			stage.removeEventListener(Event.ENTER_FRAME, onActive);
-			
+		private function onEnterFrame(e:Event):void {
+			stage.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 			
 			MenuUtil.classes["main"] = this;
 			stage.nativeWindow.menu = MenuUtil.createRootMenu(menuXML);
 			
-			NativeApplication.nativeApplication.removeEventListener(Event.ACTIVATE, onActive);
+			NativeApplication.nativeApplication.removeEventListener(Event.ACTIVATE, onEnterFrame);
 
 //			var na:NativeApplication = NativeApplication(e.currentTarget);
 			var na:NativeApplication = NativeApplication.nativeApplication;
