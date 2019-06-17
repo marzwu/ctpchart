@@ -3,7 +3,9 @@ package {
 	import com.bit101.components.VBox;
 	import com.cangzhitao.menu.MenuUtil;
 	import com.marz.KBox;
-	import com.marz.KData;
+	import com.marz.model.DataFrame;
+	import com.marz.model.KData;
+	import com.marz.model.TradeData;
 	
 	import flash.desktop.NativeApplication;
 	import flash.display.Sprite;
@@ -33,8 +35,8 @@ package {
 						<!--item label="新建(N)" data="new" keyEquivalent="n" mnemonicIndex="3" selectFunction=""/-->
 						<item label="打开历史数据" data="openHist" keyEquivalent="o" mnemonicIndex="3"
 							  selectFunction="main.openHist"/>
-						<item label="打开回测结果" data="openBacktest" keyEquivalent="b" mnemonicIndex="3"
-							  selectFunction="main.openBacktest"/>
+						<item label="打开回测结果" data="openTrade" keyEquivalent="b" mnemonicIndex="3"
+							  selectFunction="main.openTrade"/>
 						<!--item label="保存(S)" data="save" keyEquivalent="s" mnemonicIndex="3" selectFunction=""/-->
 						<!--item label="另存为(A)" data="save_as" keyEquivalent="S" mnemonicIndex="4" selectFunction=""/-->
 						<item lable="separator"/>
@@ -89,12 +91,13 @@ package {
 		}
 		
 		public function openHist(path:String):void {
-			var fileToOpen:File = File.documentsDirectory;
+//			var fileToOpen:File = File.documentsDirectory;
+			var fileToOpen:File = new File('D:\\github\\vnpy-1.9.2\\examples\\CtaBacktesting');
 			fileToOpen.browseForOpen('选择历史文件');
-			fileToOpen.addEventListener(Event.SELECT, fileSelected);
+			fileToOpen.addEventListener(Event.SELECT, onHistFileSelected);
 		}
 		
-		private function fileSelected(e:Event):void {
+		private function onHistFileSelected(e:Event):void {
 			trace(e.currentTarget.nativePath);
 			
 			var stream:FileStream = new FileStream();
@@ -123,30 +126,45 @@ package {
 				fileName = fileName.substr(0, lastIndexOf)
 			}
 			kbox.symbol = fileName;
-			kbox.setData(ks);
+			kbox.quotes = ks;
 			kbox.show();
 		}
 		
-		public function openBacktest(path:String):void {
-			var stream:FileStream = new FileStream();
-			var file:File = new File(path);//绑定一个文件
-			stream.open(file, FileMode.READ);//读取文件
-			trace(stream.readMultiByte(stream.bytesAvailable, 'utf-8'));
-			stream.close();
+		public function openTrade(path:String):void {
+//			var fileToOpen:File = File.documentsDirectory;
+			var fileToOpen:File = new File('D:\\github\\120.76.243.155\\moneymaker\\backtesting');
+			fileToOpen.browseForOpen('选择历史文件');
+			fileToOpen.addEventListener(Event.SELECT, onTradeFileSelected);
 		}
+		
+		private function onTradeFileSelected(e:Event):void {
+			trace(e.currentTarget.nativePath);
+			
+			var df:DataFrame = DataFrame.read_csv(e.currentTarget.nativePath);
+			trace(df.data);
+			trace(df.getRow(0));
+			trace(df.size());
+			
+			var trades:Vector.<TradeData> = new Vector.<TradeData>();
+			var size:uint = df.size();
+			for (var i:int = 0; i < size; i++) {
+				var t:TradeData = new TradeData();
+				t.t_str = df.data['entryDt'];
+				t.price = df.data['entryPrice'];
+				t.pos = df.data['volume'];
+			}
+			
+			kbox.trades = trades;
+
+//			kbox.setData(ks);
+			kbox.show();
+		}
+		
 		
 		public function exitApp(errorCode:int = 0):void {
 			NativeApplication.nativeApplication.exit();
 		}
 		
-		private function createTestData():Array {
-			var r:Array = [];
-			r.push(new KData(new Date(), 1, 3, 1, 2));
-			r.push(new KData(new Date(), 2, 3, 2, 3));
-			r.push(new KData(new Date(), 3, 3, 2, 2));
-			r.push(new KData(new Date(), 2, 2, 1, 1));
-			return r;
-		}
 		
 		private function onResize(e:Event):void {
 			kbox.show();

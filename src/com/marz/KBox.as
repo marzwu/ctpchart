@@ -1,4 +1,7 @@
 package com.marz {
+	import com.marz.model.KData;
+	import com.marz.model.TradeData;
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
@@ -19,10 +22,12 @@ package com.marz {
 		private var floatDateTimeTxt:TextField;
 		
 		private var _symbol:String = '';//数据名
-		private var _data:Array = [];//所有数据
+		private var _quotes:Array = [];//所有数据
 		private var _dataInBox:Array;
 		private var _hValue:Number;
 		private var _lValue:Number;
+		
+		private var _trades:Vector.<TradeData> = new Vector.<TradeData>();//交易数据
 		
 		private var k_count_on_show:int = 10;//显示的k线根数
 		private var k_cursor:int = 0;//显示的k线开始位置
@@ -93,7 +98,13 @@ package com.marz {
 		}
 		
 		private function onMouseWheel(e:MouseEvent):void {
-		
+			var direction:int = 0;
+			var updown:int = e.delta;
+			
+			var speed:int = e.ctrlKey ? 10 : 1;
+			k_cursor += speed * direction;
+			k_width += updown * 2;
+			show();
 		}
 		
 		private function onMouseMove(e:MouseEvent):void {
@@ -133,19 +144,19 @@ package com.marz {
 			}
 		}
 		
-		public function setData(data:Array):void {
-			_data = data;
-		}
-		
 		public function show():void {
 			infoLayer.text = symbol;
 			
-			this.graphics.clear();
-			this.graphics.lineStyle(1, 0xffffff);
-			this.graphics.beginFill(0xffffff, 1);
-			this.graphics.drawRect(0, 0, stage.stageWidth - 1, stage.stageHeight - 1);
-			this.graphics.endFill();
-			
+			drawBg();
+			drawKline();
+			drawTrade();
+		}
+		
+		private function drawTrade():void {
+		
+		}
+		
+		private function drawKline():void {
 			kLayer.graphics.clear();
 //			kLayer.x = margin;
 //			kLayer.y = margin;
@@ -164,9 +175,9 @@ package com.marz {
 			k_count_on_show = (windowWidth - margin * 2 - k_width) / (k_width + gap) + 1;
 			
 			k_cursor = Math.max(0, k_cursor);
-			k_cursor = Math.min(_data.length - 1, k_cursor);
+			k_cursor = Math.min(_quotes.length - 1, k_cursor);
 			
-			_dataInBox = _data.slice(k_cursor, k_cursor + k_count_on_show);
+			_dataInBox = _quotes.slice(k_cursor, k_cursor + k_count_on_show);
 			
 			_hValue = int.MIN_VALUE;
 			_lValue = int.MAX_VALUE;
@@ -195,12 +206,36 @@ package com.marz {
 			}
 		}
 		
+		private function drawBg():void {
+			this.graphics.clear();
+			this.graphics.lineStyle(1, 0xffffff);
+			this.graphics.beginFill(0xffffff, 1);
+			this.graphics.drawRect(0, 0, stage.stageWidth - 1, stage.stageHeight - 1);
+			this.graphics.endFill();
+		}
+		
 		public function get symbol():String {
 			return _symbol;
 		}
 		
 		public function set symbol(value:String):void {
 			_symbol = value;
+		}
+		
+		public function get trades():Vector.<TradeData> {
+			return _trades;
+		}
+		
+		public function set trades(value:Vector.<TradeData>):void {
+			_trades = value;
+		}
+		
+		public function get quotes():Array {
+			return _quotes;
+		}
+		
+		public function set quotes(value:Array):void {
+			_quotes = value;
 		}
 	}
 }

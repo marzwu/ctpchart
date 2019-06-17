@@ -135,7 +135,7 @@
       <module fileurl="file://$PROJECT_DIR$/ctpchart.iml" filepath="$PROJECT_DIR$/ctpchart.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" default="true">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" default="false" project-jdk-name="AIRSDK_Compiler" project-jdk-type="Flex SDK Type (new)">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="VcsDirectoryMappings">

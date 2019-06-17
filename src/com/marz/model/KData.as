@@ -1,4 +1,4 @@
-package com.marz {
+package com.marz.model {
 	public class KData {
 		public var t:Date;
 		public var t_str:String;
