@@ -13,6 +13,9 @@ package com.marz {
 	import mx.utils.StringUtil;
 	
 	public class KBox extends Sprite {
+		public static const levels:Array = ['1min', '3min', '5min', '15min', '30min', '1h'];
+		public static const levels_i:Array = [1, 3, 5, 15, 30, 60];
+		
 		private var bgLayer:Sprite;//背景层
 		private var kLayer:Sprite;//柱体层
 		private var incatorLayer:Sprite;//指标层
@@ -22,8 +25,10 @@ package com.marz {
 		private var floatDateTimeTxt:TextField;
 		
 		private var _symbol:String = '';//数据名
-		private var _quotes:Array = [];//所有数据
-		private var _dataInBox:Array;
+		private var _quotesChanged:Boolean = false;
+		private var _quotes:Array = [];//行情数据
+		private var _quotesOnLevel:Array = [];//聚合后的行情
+		private var _dataInBox:Array;//窗口内的行情
 		private var _hValue:Number;
 		private var _lValue:Number;
 		
@@ -31,11 +36,16 @@ package com.marz {
 		
 		private var k_count_on_show:int = 10;//显示的k线根数
 		private var k_cursor:int = 0;//显示的k线开始位置
+		private var _levelChanged:Boolean = false;//k线级别是否被修改
+		private var _level:int = 0;//k线级别 [1min, 3min, 5min]
 		
 		private var margin:int = 2;//留白，单位像素
 		private var gap:int = 2;//k线间隔，单位像素
 		private var k_width:int = 20;//k线宽度，单位像素
-		private var k_width_max:int = 20;//k线最大宽度，单位像素
+		private var k_width_max:int = 20;
+		
+		//k线最大宽度，单位像素
+		
 		
 		public function KBox() {
 			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -147,9 +157,41 @@ package com.marz {
 		public function show():void {
 			infoLayer.text = symbol;
 			
+			calcKData();
 			drawBg();
 			drawKline();
 			drawTrade();
+		}
+		
+		/**
+		 * 根据k线周期，组织k线
+		 */
+		private function calcKData():void {
+			if (_levelChanged || _quotesChanged) {
+				_levelChanged = _quotesChanged = false;
+				
+				var period:int = levels_i[_level];
+				if (period == 1) {
+					_quotesOnLevel = _quotes;
+					return;
+				}
+				
+				_quotesOnLevel = [];
+				var len:uint = _quotes.length;
+				for (var i:int = 0; i < len; i++) {
+					var item:KData = _quotes[i];
+					if (i % period == 0) {//周期内第一根K线
+						var k:KData = new KData(item.t, item.o, item.h, item.l, item.c);
+						k.t_str = item.t_str;
+						_quotesOnLevel.push(k);
+					} else {
+						var k:KData = _quotesOnLevel[_quotesOnLevel.length - 1];
+						k.h = Math.max(k.h, item.h);
+						k.l = Math.min(k.l, item.l);
+						k.c = item.c;
+					}
+				}
+			}
 		}
 		
 		private function drawTrade():void {
@@ -175,9 +217,9 @@ package com.marz {
 			k_count_on_show = (windowWidth - margin * 2 - k_width) / (k_width + gap) + 1;
 			
 			k_cursor = Math.max(0, k_cursor);
-			k_cursor = Math.min(_quotes.length - 1, k_cursor);
+			k_cursor = Math.min(_quotesOnLevel.length - 1, k_cursor);
 			
-			_dataInBox = _quotes.slice(k_cursor, k_cursor + k_count_on_show);
+			_dataInBox = _quotesOnLevel.slice(k_cursor, k_cursor + k_count_on_show);
 			
 			_hValue = int.MIN_VALUE;
 			_lValue = int.MAX_VALUE;
@@ -235,7 +277,17 @@ package com.marz {
 		}
 		
 		public function set quotes(value:Array):void {
-			_quotes = value;
+			if (_quotes != value) {
+				_quotes = value;
+				_quotesChanged = true;
+			}
+		}
+		
+		public function set level(level:int):void {
+			if (_level != level) {
+				_level = level;
+				_levelChanged = true;
+			}
 		}
 	}
 }

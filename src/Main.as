@@ -1,6 +1,6 @@
 package {
 	
-	import com.bit101.components.VBox;
+	import com.bit101.components.ComboBox;
 	import com.cangzhitao.menu.MenuUtil;
 	import com.marz.KBox;
 	import com.marz.model.DataFrame;
@@ -27,6 +27,7 @@ package {
 	public class Main extends Sprite {
 		private var loader:URLLoader;
 		
+		private var com:ComboBox;
 		private var kbox:KBox;
 		
 		private var menuXML:XML =
@@ -52,7 +53,7 @@ package {
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 //			stage.color=0x808080;
-			stage.addEventListener(Event.RESIZE, onResize);
+//			stage.addEventListener(Event.RESIZE, onResize);
 //			stage.addEventListener(Event.ADDED, onActive);
 
 //			this.addEventListener(Event.COMPLETE, onActive);
@@ -73,11 +74,16 @@ package {
 //			window.title='hello window';
 //			window.minimized=false;
 //			addChild(window);
+
+//			var vbox:VBox = new VBox();
+//			vbox.width = 800;
+//			vbox.height = 600;
+//			addChild(vbox);
 			
-			var vbox:VBox = new VBox();
-			vbox.width = 800;
-			vbox.height = 600;
-			addChild(vbox);
+			com = new ComboBox(null, 0, 0, '', KBox.levels);
+			com.selectedIndex = 0;
+			com.addEventListener(Event.SELECT, onSelect);
+			addChild(com);
 			
 			loader = new URLLoader();
 			configureListeners(loader);
@@ -88,6 +94,13 @@ package {
 			} catch (error:Error) {
 				trace("Unable to load requested document.");
 			}
+		}
+		
+		private function onSelect(event:Event):void {
+//			trace(event.type);
+			var t:ComboBox = (ComboBox)(event.currentTarget);
+			kbox.level = t.selectedIndex;
+			kbox.show();
 		}
 		
 		public function openHist(path:String):void {
@@ -149,9 +162,9 @@ package {
 			var size:uint = df.size();
 			for (var i:int = 0; i < size; i++) {
 				var t:TradeData = new TradeData();
-				t.t_str = df.data['entryDt'];
-				t.price = df.data['entryPrice'];
-				t.pos = df.data['volume'];
+				t.t_str = df.data['entryDt'][i];
+				t.price = df.data['entryPrice'][i];
+				t.pos = df.data['turnover'][i];
 			}
 			
 			kbox.trades = trades;
@@ -167,6 +180,7 @@ package {
 		
 		
 		private function onResize(e:Event):void {
+			com.x = stage.stageWidth - com.width;
 			kbox.show();
 		}
 		
@@ -180,7 +194,8 @@ package {
 
 //			var na:NativeApplication = NativeApplication(e.currentTarget);
 			var na:NativeApplication = NativeApplication.nativeApplication;
-			na.addEventListener(NativeWindowBoundsEvent.RESIZE, onResize);
+//			na.addEventListener(NativeWindowBoundsEvent.RESIZE, onResize);
+			na.activeWindow.addEventListener(NativeWindowBoundsEvent.RESIZE, onResize);
 			na.activeWindow.title = "复盘神器";
 			na.activeWindow.maximize();
 		}
