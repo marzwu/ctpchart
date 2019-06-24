@@ -6,6 +6,7 @@ package com.marz.model {
 		public var h:Number;
 		public var l:Number;
 		public var c:Number;
+		public var trades:Array;
 		
 		public function KData(t:Number, o:Number, h:Number, l:Number, c:Number) {
 			this.t = t;
@@ -22,6 +23,14 @@ package com.marz.model {
 		public function set t_str(value:String):void {
 			_t_str = value;
 			t = Date.parse(value);
+		}
+		
+		public function addTrade(value:TradeData):void {
+			if (trades == null) {
+				trades = [];
+			}
+			
+			trades.push(value);
 		}
 	}
 }

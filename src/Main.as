@@ -164,12 +164,19 @@ package {
 				var t:TradeData = new TradeData();
 				t.t_str = df.data['entryDt'][i];
 				t.price = df.data['entryPrice'][i];
-				t.pos = df.data['turnover'][i];
+				t.pos = df.data['volume'][i];
+				t.side = t.pos > 0 ? 1 : -1;
+				trades.push(t);
+				
+				t = new TradeData();
+				t.t_str = df.data['exitDt'][i];
+				t.price = df.data['exitPrice'][i];
+				t.pos = -df.data['volume'][i];
+				t.side = t.pos > 0 ? 1 : -1;
+				trades.push(t);
 			}
 			
 			kbox.trades = trades;
-
-//			kbox.setData(ks);
 			kbox.show();
 		}
 		

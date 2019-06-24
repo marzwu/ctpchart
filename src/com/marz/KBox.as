@@ -32,6 +32,7 @@ package com.marz {
 		private var _hValue:Number;
 		private var _lValue:Number;
 		
+		private var _tradesChanged:Boolean = false;
 		private var _trades:Vector.<TradeData> = new Vector.<TradeData>();//交易数据
 		
 		private var k_count_on_show:int = 10;//显示的k线根数
@@ -94,7 +95,9 @@ package com.marz {
 				direction = -1;
 			else if (e.keyCode == Keyboard.RIGHT)
 				direction = 1;
-			else if (e.keyCode == Keyboard.UP)
+			else if (e.keyCode == Keyboard.END) {
+				direction = int.MAX_VALUE;
+			} else if (e.keyCode == Keyboard.UP)
 				updown = 1;
 			else if (e.keyCode == Keyboard.DOWN)
 				updown = -1;
@@ -167,28 +170,40 @@ package com.marz {
 		 * 根据k线周期，组织k线
 		 */
 		private function calcKData():void {
-			if (_levelChanged || _quotesChanged) {
-				_levelChanged = _quotesChanged = false;
+			if (_levelChanged || _quotesChanged || _tradesChanged) {
+				_levelChanged = false;
+				_quotesChanged = false;
+				_tradesChanged = false;
 				
-				var period:int = levels_i[_level];
+				//组织新周期的K线
+				var period:int = KBox.levels_i[_level];
 				if (period == 1) {
 					_quotesOnLevel = _quotes;
-					return;
+				} else {
+					_quotesOnLevel = [];
+					var len:uint = _quotes.length;
+					for (var i:int = 0; i < len; i++) {
+						var item:KData = _quotes[i];
+						if (i % period == 0) {//周期内第一根K线
+							var k:KData = new KData(item.t, item.o, item.h, item.l, item.c);
+							k.t_str = item.t_str;
+							_quotesOnLevel.push(k);
+						} else {
+							var k:KData = _quotesOnLevel[_quotesOnLevel.length - 1];
+							k.h = Math.max(k.h, item.h);
+							k.l = Math.min(k.l, item.l);
+							k.c = item.c;
+						}
+					}
 				}
 				
-				_quotesOnLevel = [];
-				var len:uint = _quotes.length;
-				for (var i:int = 0; i < len; i++) {
-					var item:KData = _quotes[i];
-					if (i % period == 0) {//周期内第一根K线
-						var k:KData = new KData(item.t, item.o, item.h, item.l, item.c);
-						k.t_str = item.t_str;
-						_quotesOnLevel.push(k);
-					} else {
-						var k:KData = _quotesOnLevel[_quotesOnLevel.length - 1];
-						k.h = Math.max(k.h, item.h);
-						k.l = Math.min(k.l, item.l);
-						k.c = item.c;
+				//附加交易信息
+				for each(var trade:TradeData in _trades) {
+					for each(var k:KData in _quotesOnLevel) {
+						if (k.t <= trade.t && trade.t < k.t + period * 60 * 1000) {
+							k.addTrade(trade);
+							break;
+						}
 					}
 				}
 			}
@@ -245,6 +260,32 @@ package com.marz {
 				//下影线
 				kLayer.graphics.moveTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - k.l) * scale);
 				kLayer.graphics.lineTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - Math.min(k.o, k.c)) * scale);
+				
+				
+				if (k.trades) {
+					for each(var trade:TradeData in k.trades) {
+						if (trade.side == 1) {
+							//多仓位置
+							kLayer.graphics.lineStyle(1, 0xff0000);
+							kLayer.graphics.beginFill(0xff0000, .8);
+							kLayer.graphics.moveTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
+							kLayer.graphics.lineTo(margin + i * (gap + k_width), margin + (_hValue - trade.price) * scale + 10);
+							kLayer.graphics.lineTo(margin + i * (gap + k_width) + 1 * k_width, margin + (_hValue - trade.price) * scale + 10);
+							kLayer.graphics.lineTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
+							kLayer.graphics.endFill();
+						} else {
+							//空仓位置
+							kLayer.graphics.lineStyle(1, 0x0000ff);
+							kLayer.graphics.beginFill(0x0000ff, .8);
+							kLayer.graphics.moveTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
+							kLayer.graphics.lineTo(margin + i * (gap + k_width), margin + (_hValue - trade.price) * scale - 10);
+							kLayer.graphics.lineTo(margin + i * (gap + k_width) + 1 * k_width, margin + (_hValue - trade.price) * scale - 10);
+							kLayer.graphics.lineTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
+							kLayer.graphics.endFill();
+						}
+						
+					}
+				}
 			}
 		}
 		
@@ -269,7 +310,10 @@ package com.marz {
 		}
 		
 		public function set trades(value:Vector.<TradeData>):void {
-			_trades = value;
+			if (_trades != value) {
+				_trades = value;
+				_tradesChanged = true;
+			}
 		}
 		
 		public function get quotes():Array {

@@ -39,7 +39,7 @@ package com.marz.model {
 			stream.close();
 			
 			var df:DataFrame = new DataFrame();
-			var items:Array = str.split('\n');
+			var items:Array = str.split('\r\n');
 			
 			//读列头
 			var head:Array = items[0].split(',');
