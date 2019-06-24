@@ -267,21 +267,25 @@ package com.marz {
 						if (trade.side == 1) {
 							//多仓位置
 							kLayer.graphics.lineStyle(1, 0xff0000);
-							kLayer.graphics.beginFill(0xff0000, .8);
+							if (!trade.isOpen)
+								kLayer.graphics.beginFill(0xff0000, .8);
 							kLayer.graphics.moveTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
 							kLayer.graphics.lineTo(margin + i * (gap + k_width), margin + (_hValue - trade.price) * scale + 10);
 							kLayer.graphics.lineTo(margin + i * (gap + k_width) + 1 * k_width, margin + (_hValue - trade.price) * scale + 10);
 							kLayer.graphics.lineTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
-							kLayer.graphics.endFill();
+							if (!trade.isOpen)
+								kLayer.graphics.endFill();
 						} else {
 							//空仓位置
 							kLayer.graphics.lineStyle(1, 0x0000ff);
-							kLayer.graphics.beginFill(0x0000ff, .8);
+							if (!trade.isOpen)
+								kLayer.graphics.beginFill(0x0000ff, .8);
 							kLayer.graphics.moveTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
 							kLayer.graphics.lineTo(margin + i * (gap + k_width), margin + (_hValue - trade.price) * scale - 10);
 							kLayer.graphics.lineTo(margin + i * (gap + k_width) + 1 * k_width, margin + (_hValue - trade.price) * scale - 10);
 							kLayer.graphics.lineTo(margin + i * (gap + k_width) + .5 * k_width, margin + (_hValue - trade.price) * scale);
-							kLayer.graphics.endFill();
+							if (!trade.isOpen)
+								kLayer.graphics.endFill();
 						}
 						
 					}

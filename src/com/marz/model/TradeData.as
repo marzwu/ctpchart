@@ -5,6 +5,7 @@ package com.marz.model {
 		public var t:Number;
 		private var _t_str:String;
 		public var side:int;
+		public var isOpen:Boolean;
 		public var price:Number;
 		public var pos:int;
 		

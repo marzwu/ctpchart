@@ -166,6 +166,7 @@ package {
 				t.price = df.data['entryPrice'][i];
 				t.pos = df.data['volume'][i];
 				t.side = t.pos > 0 ? 1 : -1;
+				t.isOpen = true;
 				trades.push(t);
 				
 				t = new TradeData();
@@ -173,6 +174,7 @@ package {
 				t.price = df.data['exitPrice'][i];
 				t.pos = -df.data['volume'][i];
 				t.side = t.pos > 0 ? 1 : -1;
+				t.isOpen = false;
 				trades.push(t);
 			}
 			
